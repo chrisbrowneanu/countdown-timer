@@ -1,0 +1,713 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RoundTable Timer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+
+        @import url('https://fonts.googleapis.com/css?family=Roboto:100,300');
+
+        button[data-setter] {
+            outline: none;
+            background: transparent;
+            border: none;
+            font-family: 'Roboto';
+            font-weight: 300;
+            font-size: 18px;
+            width: 25px;
+            height: 30px;
+            color: #FFFFFF;
+            cursor: pointer;
+        }
+
+        button[data-setter]:hover {
+            opacity: 0.5;
+        }
+
+        .clock_container {
+            position: relative;
+            top: 30px;
+            width: 300px;
+            margin: 0 10px;
+            float: left;
+            height: 300px;
+        }
+
+        .clock_text {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+        }
+
+        .setters {
+            position: absolute;
+            left: 85px;
+            top: 75px;
+        }
+
+        .minutes-set {
+            float: left;
+            margin-right: 28px;
+        }
+
+        .seconds-set {
+            float: right;
+        }
+
+        .controlls {
+            position: absolute;
+            left: 48px;
+            top: 90px;
+            text-align: center;
+        }
+
+        .display-remain-time {
+            font-family: 'Roboto';
+            font-weight: 1000;
+            font-size: 85px;
+            color: #FFFFFF;
+        }
+
+        #pause {
+            outline: none;
+            background: transparent;
+            border: none;
+            margin-top: 0px;
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        #reset::before {
+            display: block;
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 16px;
+            /*border-radius: 50%;*/
+
+        }
+
+        #reset {
+            content: "";
+            position: relative;
+            top: -14px;
+            left: -5px;
+            width: 30px;
+            height: 30px;
+            background-color: transparent;
+            border-radius: 50%;
+            border-top: 2px solid #FFFFFF;
+            border-bottom: 2px solid #FFFFFF;
+            border-left: 2px solid #FFFFFF;
+            border-right: 2px solid #FFFFFF;
+        }
+
+
+        .play::before {
+            display: block;
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 16px;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 22px solid #FFFFFF;
+        }
+
+        .pause::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            width: 15px;
+            height: 30px;
+            background-color: transparent;
+            border-radius: 1px;
+            border: 5px solid #FFFFFF;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        #pause:hover {
+            opacity: 0.8;
+        }
+
+        .e-c-base {
+            fill: none;
+            stroke: #B6B6B6;
+            stroke-width: 4px
+        }
+
+        .e-c-progress {
+            fill: none;
+            stroke: #FFFFFF;
+            stroke-width: 4px;
+            transition: stroke-dashoffset 0.7s;
+        }
+
+        .e-c-pointer {
+            fill: #FFF;
+            stroke: #FFFFFF;
+            stroke-width: 2px;
+        }
+
+        #e-pointer {
+            transition: transform 0.7s;
+        }
+
+        h1 {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+
+        #clock {
+            font-family: 'Roboto';
+            font-weight: 1000;
+            font-size: 60px;
+            color: #FFFFFF;
+            text-align: center;
+            margin-top: -10px
+        }
+
+        #clock_s {
+            font-size: 40px;
+        }
+
+        #clock_title {
+            font-family: 'Roboto';
+            font-weight: 1000;
+            font-size: 18px;
+            color: #FFFFFF;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        html, body {
+            height: 100vh;
+        }
+
+        .container-fluid {
+            height: 100%;
+            min-height: 500px;
+        }
+
+        .row {
+            padding-top: 50px;
+            padding-bottom: 100px;
+        }
+
+        input[type="color" i] {
+            height: 30px;
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 0rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Systems Thinking RoundTable Timer</h1>
+<nav>
+    <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
+        <a class="nav-item nav-link text-secondary active" id="nav-timer-tab" data-toggle="tab" href="#timer" role="tab"
+           aria-controls="nav-timer" aria-selected="true">Timer</a>
+        <a class="nav-item nav-link text-secondary" id="nav-settings-tab" data-toggle="tab" href="#settings" role="tab"
+           aria-controls="nav-settings" aria-selected="false">Settings</a>
+        <a class="nav-item nav-link text-secondary" id="nav-help-tab" data-toggle="tab" href="#help" role="tab"
+           aria-controls="nav-help" aria-selected="false">Help</a>
+    </div>
+</nav>
+
+<div class="container-fluid" id="main">
+    <div class="tab-content" id="nav-tabContent">
+        <div class="row tab-pane fade show active" id="timer" role="tabpanel" aria-labelledby="nav-timer-tab">
+            <div class="col-md-6 mx-auto">
+                <div class="clock_container">
+                    <div class="clock_text">
+                        <div id="clock_title">
+                            <span id="title_label"></span><br/>
+                            <span id="title_text"></span><br/>
+                            <span id="clock_text"></span>
+                        </div>
+                        <div id="clock">
+                            <span id="clock_hm"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clock_container" id="clock_container">
+                    <div class="setters">
+                        <div class="minutes-set">
+                            <button data-setter="minutes-plus">MM</button>
+                            <button data-setter="minutes-minus"></button>
+                        </div>
+                        <div class="seconds-set">
+                            <button data-setter="seconds-plus"></button>
+                            <button data-setter="seconds-minus">SS</button>
+                        </div>
+                    </div>
+                    <div class="circle">
+                        <svg width="300" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(110,110)">
+                                <circle r="100" class="e-c-base"/>
+                                <g transform="rotate(-90)">
+                                    <circle r="100" class="e-c-progress"/>
+                                    <g id="e-pointer">
+                                        <circle cx="100" cy="0" r="8" class="e-c-pointer"/>
+                                    </g>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="controlls">
+                        <div class="display-remain-time">MM:SS</div>
+                        <button class="play" id="pause"></button>
+                        <button id="reset"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row tab-pane fade" id="settings" role="tabpanel" aria-labelledby="nav-settings-tab" style="background-color: #FFFFFF">
+            <div class="col-md-8 mx-auto">
+                <form>
+                    <div class="form-row">
+                        <div class="form-group col-md-4 text-right">
+                            <label for="wholetime_min_input">Total Countdown Time (MM:SS)</label>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <input type="number" name="wholetime_min_input" id="wholetime_min_input" value="02" min="00" max="99"
+                                   pattern="[0-9]*"
+                                   onchange="changeTime()"/>
+                            <input type="number" name="wholetime_sec_input" id="wholetime_sec_input" value="00" min="00" max="59"
+                                   pattern="[0-9]*"
+                                   onchange="changeTime()"/>
+                        </div>
+                        <div class="form-group col-md-3 text-right">
+                            <label for="default_background">Default Background</label>
+                        </div>
+                        <div class="form-group col-md-1">
+                            <input type="color" id="default_background" name="default_background"
+                                   onchange="changeColor()"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4 text-right">
+                            <label for="warntime_min_input">Warning At (MM:SS)</label>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <input type="number" name="warntime_min_input" id="warntime_min_input" value="00" min="00" max="99"
+                                   pattern="[0-9]*"
+                                   onchange="changeTime()"/>
+                            <input type="number" name="warntime_sec_input" id="warntime_sec_input" value="30" min="00" max="59"
+                                   pattern="[0-9]*"
+                                   onchange="changeTime()"/>
+                        </div>
+                        <div class="form-group col-md-3 text-right">
+                            <label for="warn_background">Warning Background</label>
+                        </div>
+                        <div class="form-group col-md-1">
+                            <input type="color" id="warn_background" name="warn_background">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-2 text-right">
+                            <label for="title_label_input">Title Label</label>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input type="text" class="form-control" name="title_label_input" id="title_label_input"
+                                   onchange="changeText()"/>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <label for="title_label_fontsize_input">size (pt)</label>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <input type="number" name="title_label_fontsize_input" id="title_label_fontsize_input"
+                                   class="form-control"
+                                   min="10"
+                                   max="36" pattern="[0-9]*" onchange="changeText()"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-2 text-right">
+                            <label for="title_text_input">Title Text</label>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input type="text" name="title_text_input" id="title_text_input"
+                                   class="form-control"
+                                   onchange="changeText()"/>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <label for="title_text_fontsize_input">size (pt)</label>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <input type="number" name="title_text_fontsize_input" id="title_text_fontsize_input"
+                                   class="form-control" min="10"
+                                   max="64" pattern="[0-9]*" onchange="changeText()"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-2 text-right">
+                            <label for="clock_text_input">Clock Label</label>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input type="text" name="clock_text_input" id="clock_text_input"
+                                   class="form-control" onchange="changeText()"/>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <label for="clock_text_fontsize_input">size (pt)</label>
+                        </div>
+                        <div class="form-group col-md-1 text-right">
+                            <input type="number" name="clock_text_fontsize_input" id="clock_text_fontsize_input"
+                                   class="form-control" min="10"
+                                   max="36" pattern="[0-9]*" onchange="changeText()"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+					<button type="button" class="btn btn-outline-danger" onclick="deleteCookies()">Reset all defaults</button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+		<div class="row tab-pane fade" id="help" role="tabpanel" aria-labelledby="nav-settings-tab" style="background-color: #FFFFFF">
+			            <div class="col-md-6 mx-auto">
+
+		<h2>Instructions</h2>
+		<p>This is a handy timer for the Systems Thinking RoundTable format.</p>
+		<p>The code is based on an example tutorial here <https://www.cssscript.com/circular-countdown-timer-javascript-css3/>, but has been customised for this specific purpose including adding settings, warning feature and topic/time pane.</p>
+		<h2>Using this timer with Virtual RoundTables</h2>
+		<p>RoundTables hosted virtually can benefit from a timer not being used as a "share screen" but as an actual "participant window". This can be done easily using a screen capture tool that routes the screen capture to a 'virtual camera'.</p>
+		<h4>On MacOS</h3>
+		<p>I use <a href="http://camtwiststudio.com/">CamTwist</a> using the Desktop option as a Virtual Webcam. This then can be picked up as a source camera in video applications like Zoom.</p>
+		<p>A handy hint is to run this on one machine, and then use another machine/device to show your own video. If you only have one machine, then you could switch your camera to the CamTwist source to show the Timer. Running it on a dedicated machine means that you don't have to stress too much about accidentally opening windows or other distractions while the timer is running.</p>
+		<h2>Contact</h2>
+		<p>If you find this tool useful, let me know <a href="mailto:chris.browne@anu.edu.au">Chris.Browne@anu.edu.au</a>.</p>
+		</div>
+				</div>
+
+    </div>
+</div>
+
+<script>
+
+    function changeTime() {
+        console.log("change")
+        wholetime_min_input = document.getElementById("wholetime_min_input").value;
+        wholetime_sec_input = document.getElementById("wholetime_sec_input").value;
+		warntime_min_input = document.getElementById("warntime_min_input").value;
+        warntime_sec_input = document.getElementById("warntime_sec_input").value;
+        wholeTime = Number(wholetime_min_input) * 60 + Number(wholetime_sec_input);
+        console.log(wholetime_min_input, wholetime_sec_input);
+        console.log(typeof wholeTime);
+        console.log(wholeTime)
+        clearInterval(intervalTimer);
+        displayTimeLeft(wholeTime);
+        pauseBtn.classList.remove('pause');
+        pauseBtn.classList.add('play');
+        document.getElementById("main").style["background-color"] = document.getElementById("default_background").value;
+        isPaused = false;
+        isStarted = false;
+		setCookie('wholetime_min_input',wholetime_min_input, 30);
+		setCookie('wholetime_sec_input',wholetime_sec_input, 30);
+		setCookie('warntime_min_input',warntime_min_input, 30);
+		setCookie('warntime_sec_input',warntime_sec_input, 30);
+        return;
+    }
+
+    function changeColor() {
+	    default_background_input = document.getElementById("default_background")
+	    warn_background_input = document.getElementById("warn_background")
+
+        document.getElementById("main").style["background-color"] = default_background_input.value;
+
+        setCookie('default_background',default_background_input.value, 30);
+		setCookie('warn_background',warn_background_input.value, 30);
+        return;
+    }
+
+    function changeText() {
+	    title_label = document.getElementById("title_label")
+	    title_label_input = document.getElementById("title_label_input")
+	    title_label_fontsize = document.getElementById("title_label_fontsize_input")
+
+        title_label.innerText = title_label_input.value;
+        title_label.style["font-size"] = title_label_fontsize.value + "px";
+
+        title_text = document.getElementById("title_text")
+	    title_text_input = document.getElementById("title_text_input")
+	    title_text_fontsize = document.getElementById("title_text_fontsize_input")
+
+        title_text.innerText = title_text_input.value;
+        title_text.style["font-size"] = title_text_fontsize.value + "px";
+
+        clock_text = document.getElementById("clock_text")
+	    clock_text_input = document.getElementById("clock_text_input")
+	    clock_text_fontsize = document.getElementById("clock_text_fontsize_input")
+
+		clock_text.innerText = clock_text_input.value;
+        clock_text.style["font-size"] = clock_text_fontsize.value + "px";
+
+		setCookie('title_label_input',title_label_input.value, 30);
+		setCookie('title_label_fontsize_input',title_label_fontsize.value, 30);
+		setCookie('title_text_input',title_text_input.value, 30);
+		setCookie('title_text_fontsize_input',title_text_fontsize.value, 30);
+		setCookie('clock_text_input',clock_text_input.value, 30);
+		setCookie('clock_text_fontsize_input',clock_text_fontsize.value, 30);
+
+        return;
+    }
+
+    function update(value, timePercent) {
+        var offset = length + length * value / (timePercent);
+        progressBar.style.strokeDashoffset = offset;
+        pointer.style.transform = `rotate(${-360 * value / (timePercent)}deg)`;
+    };
+
+    function timer(seconds) { //counts time, takes seconds
+        currentSecond = (Date.now() / 1000)
+        let remainTime = Date.now() + (seconds * 1000);
+        displayTimeLeft(seconds);
+
+        warntime_min_input = document.getElementById("warntime_min_input").value;
+        warntime_sec_input = document.getElementById("warntime_sec_input").value;
+        let warnTimeLeft = Number(warntime_min_input) * 60 + Number(warntime_sec_input);
+
+        intervalTimer = setInterval(function () {
+            timeLeft = Math.round((remainTime - Date.now()) / 1000);
+            if (timeLeft < 1) {
+                resetTimer();
+            }
+            if (timeLeft < warnTimeLeft) {
+                document.getElementById("main").style["background-color"] = document.getElementById("warn_background").value;
+                ;
+            }
+            displayTimeLeft(timeLeft);
+        }, 1000);
+    }
+
+    function pauseTimer(event) {
+        if (isStarted === false) {
+            timer(wholeTime);
+            isStarted = true;
+            this.classList.remove('play');
+            this.classList.add('pause');
+        } else if (isPaused) {
+            this.classList.remove('play');
+            this.classList.add('pause');
+            timer(timeLeft);
+            isPaused = isPaused ? false : true
+        } else {
+            this.classList.remove('pause');
+            this.classList.add('play');
+            clearInterval(intervalTimer);
+            isPaused = isPaused ? false : true;
+        }
+    }
+
+    function resetTimer(event) {
+        clearInterval(intervalTimer);
+        displayTimeLeft(wholeTime);
+        pauseBtn.classList.remove('pause');
+        pauseBtn.classList.add('play');
+        document.getElementById("main").style["background-color"] = document.getElementById("default_background").value;
+        wholetime_min_input = document.getElementById("wholetime_min_input").value;
+        wholetime_sec_input = document.getElementById("wholetime_sec_input").value;
+        wholeTime = Number(wholetime_min_input) * 60 + Number(wholetime_sec_input);
+        isPaused = false;
+        isStarted = false;
+        console.log(wholetime_min_input, wholeTime)
+        return;
+    }
+
+    function displayTimeLeft(timeLeft) { //displays time on the input
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        let displayString = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        displayOutput.textContent = displayString;
+        update(timeLeft, wholeTime);
+    }
+
+    function addLeadingZero(value) {
+        return value.length < 2 ? "0" + value : value;
+    }
+
+    function setCookie(name, value, days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function deleteCookies(name) {
+        setCookie("wholetime_min_input");
+        setCookie("wholetime_sec_input");
+        setCookie("warntime_min_input");
+        setCookie("warntime_sec_input");
+        setCookie("title_label_input");
+        setCookie("title_label_fontsize_input");
+        setCookie("title_text_input");
+        setCookie("title_text_fontsize_input");
+        setCookie("clock_text_input");
+        setCookie("clock_text_fontsize_input");
+        setCookie("default_background");
+        setCookie("warn_background");
+        window.location.reload(true);
+        return;
+    }
+
+    function defaultValues(name, val) {
+	    const cookieExists = Cookies.get(name);
+	    if (typeof cookieExists === 'undefined') {
+			document.getElementById( name ).value = val;
+			setCookie(name, val, 30)
+		}
+		if ( getCookie( name ) != "" ) {
+			document.getElementById( name ).value = getCookie( name );
+		} else {
+			document.getElementById( name ).value = val;
+			setCookie(name, val, 30)
+		}
+    }
+
+
+    let progressBar = document.querySelector('.e-c-progress');
+    let pointer = document.getElementById('e-pointer');
+    let length = Math.PI * 2 * 100;
+
+    const displayOutput = document.querySelector('.display-remain-time')
+    const pauseBtn = document.getElementById('pause');
+    const resetBtn = document.getElementById('reset');
+
+
+    defaultValues("wholetime_min_input", "02" );
+	defaultValues("wholetime_sec_input", "00" );
+	defaultValues("warntime_min_input", "00" );
+	defaultValues("warntime_sec_input", "15" );
+
+
+    const wholetime_min_field = document.getElementById('wholetime_min_input');
+    const wholetime_sec_field = document.getElementById('wholetime_sec_input');
+    const warntime_min_field = document.getElementById('warntime_min_input');
+    const warntime_sec_field = document.getElementById('warntime_sec_input');
+
+    let intervalTimer;
+    let timeLeft;
+    var wholetime_min_input = document.getElementById("wholetime_min_input").value;
+    var wholetime_sec_input = document.getElementById("wholetime_sec_input").value;
+    wholeTime = Number(wholetime_min_input) * 60 + Number(wholetime_sec_input);
+    console.log(wholetime_min_input, wholeTime)
+    let isPaused = false;
+    let isStarted = false;
+
+    progressBar.style.strokeDasharray = length;
+    update(wholeTime, wholeTime); //refreshes progress bar
+    displayTimeLeft(wholeTime);
+
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    wholetime_min_field.addEventListener("input", function () {
+        wholetime_min_field.value = addLeadingZero(wholetime_min_field.value);
+    });
+    wholetime_sec_field.addEventListener("input", function () {
+        wholetime_sec_field.value = addLeadingZero(wholetime_sec_field.value);
+    });
+    warntime_min_field.addEventListener("input", function () {
+        warntime_min_field.value = addLeadingZero(warntime_min_field.value);
+    });
+    warntime_sec_field.addEventListener("input", function () {
+        warntime_sec_field.value = addLeadingZero(warntime_sec_field.value);
+    });
+
+	defaultValues("title_label_input", "Today's Topic:" );
+	defaultValues("title_text_input", "YOUR GREAT TOPIC HERE" );
+	defaultValues("clock_text_input", "Current Time (AEST)" );
+
+
+	defaultValues("title_label_fontsize_input", "16" );
+	defaultValues("title_text_fontsize_input", "32" );
+	defaultValues("clock_text_fontsize_input", "16" );
+
+	defaultValues("default_background", "#1A8EDE" );
+	defaultValues("warn_background", "#FF0000" );
+
+
+    document.getElementById("title_label").innerText = document.getElementById("title_label_input").value;
+    document.getElementById("title_label").style["font-size"] = document.getElementById("title_label_fontsize_input").value + "px";
+
+    document.getElementById("title_text").innerText = document.getElementById("title_text_input").value;
+    document.getElementById("title_text").style["font-size"] = document.getElementById("title_text_fontsize_input").value + "px";
+
+    document.getElementById("clock_text").innerText = document.getElementById("clock_text_input").value;
+    document.getElementById("clock_text").style["font-size"] = document.getElementById("clock_text_fontsize_input").value + "px";
+
+    document.getElementById("main").style["background-color"] = document.getElementById("default_background").value;
+
+    ;
+
+
+</script>
+<script>
+    function currentTime() {
+        var date = new Date(); /* creating object of Date class */
+        var hour = date.getHours();
+        var min = date.getMinutes();
+        hour = updateTime(hour);
+        min = updateTime(min);
+        document.getElementById("clock_hm").innerText = hour + ":" + min; /* adding time to the div */
+        var t = setTimeout(function () {
+            currentTime()
+        }, 1000);
+    }
+
+    function updateTime(k) {
+        if (k < 10) {
+            return "0" + k;
+        } else {
+            return k;
+        }
+    }
+
+    currentTime(); /* calling currentTime() function to initiate the process */
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
